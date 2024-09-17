@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 # Function to load model checkpoint
 def load_checkpoint(filepath):
-    checkpoint = torch.load(filepath, map_location='cpu')  # Ensure compatibility with CPU if GPU not available
+    checkpoint = torch.load(filepath, map_location='cpu')  # Ensure compatibility with CPU if GPU is not available
     model = getattr(models, checkpoint['arch'])(pretrained=True)  # Dynamically load the architecture used during training
     
     # Freeze model parameters
@@ -16,7 +16,7 @@ def load_checkpoint(filepath):
         param.requires_grad = False
     
     model.classifier = checkpoint['classifier']
-    model.load_state_dict(checkpoint['state_dict'])
+    model.load_state_dict(checkpoint['model_state_dict'])  # Correct key for state dict
     model.class_to_idx = checkpoint['class_to_idx']
     
     return model
@@ -87,18 +87,6 @@ def main():
     top_class_names = [cat_to_name[class_to_idx_inverted[c]] for c in top_classes[0]]
     
     # Display the predictions
-    for i in range(args.top_k):
-        print(f"Class: {top_class_names[i]}, Probability: {top_p[0][i]:.3f}")
-
-if __name__ == "__main__":
-    main()
-
-    
-    # Map class indices to actual flower names
-    class_to_idx = {v: k for k, v in model.class_to_idx.items()}
-    top_class_names = [cat_to_name[class_to_idx[str(c)]] for c in top_classes[0]]
-    
-    # Print out the results
     for i in range(args.top_k):
         print(f"Class: {top_class_names[i]}, Probability: {top_p[0][i]:.3f}")
 
